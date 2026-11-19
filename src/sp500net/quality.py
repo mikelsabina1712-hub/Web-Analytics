@@ -54,8 +54,10 @@ def sanity_checks(prices: pd.DataFrame, max_abs_return: float, max_identical_run
 
 # ------------------------------------------------------- Tiingo validation
 
-def fetch_tiingo(ticker: str, start: str, end: str, api_key: str, cfg: dict, session=None) -> pd.Series:
-    """Adjusted close from Tiingo's end-of-day REST endpoint.
+def fetch_tiingo_frame(ticker: str, start: str, end: str, api_key: str, cfg: dict,
+                       session=None) -> pd.DataFrame:
+    """Daily prices from Tiingo's end-of-day REST endpoint, in the same
+    long format as the Yahoo download: ``date, ticker, adj_close, close, volume``.
 
     The key travels in the Authorization header, never in the URL, so it
     cannot leak into logs or browser history.
@@ -68,11 +70,25 @@ def fetch_tiingo(ticker: str, start: str, end: str, api_key: str, cfg: dict, ses
         max_retries=cfg["prices"]["max_retries"],
         session=session,
     )
+    cols = ["date", "ticker", "adj_close", "close", "volume"]
     if not js:
-        return pd.Series(dtype=float, name=ticker)
+        return pd.DataFrame(columns=cols)
     df = pd.DataFrame(js)
-    idx = pd.to_datetime(df["date"]).dt.tz_localize(None).dt.normalize()
-    return pd.Series(df["adjClose"].to_numpy(dtype=float), index=idx, name=ticker).sort_index()
+    out = pd.DataFrame({
+        "date": pd.to_datetime(df["date"]).dt.tz_localize(None).dt.normalize(),
+        "ticker": ticker,
+        "adj_close": df["adjClose"].astype(float),
+        "close": df["close"].astype(float),
+        "volume": df["volume"].astype(float),
+    })
+    return out.sort_values("date").reset_index(drop=True)[cols]
+
+
+def fetch_tiingo(ticker: str, start: str, end: str, api_key: str, cfg: dict, session=None) -> pd.Series:
+    """Adjusted close only, indexed by date (used for validation)."""
+    f = fetch_tiingo_frame(ticker, start, end, api_key, cfg, session=session)
+    return pd.Series(f["adj_close"].to_numpy(dtype=float), index=pd.DatetimeIndex(f["date"]),
+                     name=ticker)
 
 
 def compare_returns(a: pd.Series, b: pd.Series, day_tolerance: float,

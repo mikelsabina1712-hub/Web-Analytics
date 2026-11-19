@@ -44,6 +44,10 @@ prices:                           # Issue 4
   end_exclusive: "2025-01-01"     # yfinance treats `end` as exclusive
   batch_size: 50
   max_retries: 4
+  # Yahoo drops the history of tickers delisted or renamed after 2024
+  # (first run: 18 of 504 failed). Those are fetched from Tiingo instead,
+  # so the sample is not biased against firms acquired after the study period.
+  fallback_source: "tiingo"
 
 validation:                       # Issue 4
   tiingo_url: "https://api.tiingo.com/tiingo/daily/{ticker}/prices"
@@ -63,6 +67,17 @@ sample:                           # Issue 16
 universe:                         # Issues 1, 3, 6
   min_coverage: 0.99
   max_gap_days: 5
+  # Runs of this many identical prices are stale data, not trading:
+  # treated as missing before the coverage rule (AMCR: 67, SW: 35 in run 1).
+  stale_run_as_missing: 5
+
+returns:                          # Issue 4, decided after the first run of Notebook 01
+  # Corporate-action days where Yahoo and Tiingo disagree on the return
+  # by several percentage points. The true return is uncertain, so the
+  # day is set to missing for that stock only (applied in Notebook 02).
+  set_missing:
+    - {ticker: "KDP", date: "2018-07-10", reason: "Dr Pepper Snapple / Keurig merger special dividend: Yahoo +10.8%, Tiingo +1.8%"}
+    - {ticker: "RTX", date: "2020-04-03", reason: "UTC-Raytheon merger and Carrier/Otis spin-offs: Yahoo -8.1%, Tiingo +5.1%"}
 
 windows:                          # Issue 16
   rolling_months: 24
