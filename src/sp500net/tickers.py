@@ -18,8 +18,12 @@ def _issuer_from_name(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", name.lower())
 
 
-def build_ticker_map(constituents: pd.DataFrame) -> pd.DataFrame:
+def build_ticker_map(constituents: pd.DataFrame, overrides: dict[str, str] | None = None) -> pd.DataFrame:
     """One row per listed security with its Yahoo ticker and issuer.
+
+    ``overrides`` maps a Wikipedia symbol to the ticker data providers use
+    today, for firms that changed ticker after the snapshot (e.g. BK -> BNY).
+    The Wikipedia symbol stays the project's identifier.
 
     ``issuer_id`` is the SEC CIK when present (GOOG and GOOGL share one),
     otherwise a normalised company name. ``n_classes`` > 1 flags issuers
@@ -29,6 +33,11 @@ def build_ticker_map(constituents: pd.DataFrame) -> pd.DataFrame:
     m = constituents.copy()
     m = m.rename(columns={"symbol": "wiki_symbol"})
     m["yahoo_symbol"] = m["wiki_symbol"].map(to_yahoo)
+    if overrides:
+        unknown = set(overrides) - set(m["wiki_symbol"])
+        if unknown:
+            raise ValueError(f"Ticker overrides for symbols not in the snapshot: {sorted(unknown)}")
+        m["yahoo_symbol"] = m["wiki_symbol"].map(overrides).fillna(m["yahoo_symbol"])
     m["issuer_id"] = m["cik"].where(m["cik"].ne(""), m["security"].map(_issuer_from_name))
     m["n_classes"] = m.groupby("issuer_id")["wiki_symbol"].transform("count")
     cols = ["wiki_symbol", "yahoo_symbol", "security", "issuer_id", "n_classes",

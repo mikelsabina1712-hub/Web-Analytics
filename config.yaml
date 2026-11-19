@@ -38,6 +38,14 @@ wikipedia:                        # Issue 5
     "Telecommunication Services": "Communication Services"
     "Telecommunications Services": "Communication Services"
 
+tickers:                          # Issue 3
+  # Firms that changed ticker after the end-2024 snapshot. Yahoo and Tiingo
+  # only serve the history under the new ticker. Wikipedia symbol -> current ticker.
+  yahoo_overrides:
+    BK: "BNY"      # BNY, new ticker from 21 May 2026 (BNY press release)
+    MMC: "MRSH"    # Marsh McLennan, from 14 Jan 2026 (company press release)
+    EQR: "VMRK"    # Equity Residential renamed Vivmark Residential, from 18 Aug 2026 (MIAX alert)
+
 prices:                           # Issue 4
   market_proxy: "SPY"
   start: "2014-12-31"             # one day before the sample so 2015's first return exists

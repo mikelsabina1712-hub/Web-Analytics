@@ -71,6 +71,14 @@ def test_ticker_map_flags_share_classes(new):
     assert m.loc[m.wiki_symbol == "BRK.B", "yahoo_symbol"].item() == "BRK-B"
 
 
+def test_ticker_overrides(new):
+    m = tickers.build_ticker_map(new, {"AAPL": "AAPL2"})
+    assert m.loc[m.wiki_symbol == "AAPL", "yahoo_symbol"].item() == "AAPL2"
+    assert m.loc[m.wiki_symbol == "V", "yahoo_symbol"].item() == "V"
+    with pytest.raises(ValueError):
+        tickers.build_ticker_map(new, {"NOPE": "X"})
+
+
 def test_issuer_from_name_without_cik():
     assert tickers._issuer_from_name("Fox Corp (Class A)") == tickers._issuer_from_name("Fox Corp (Class B)")
 
