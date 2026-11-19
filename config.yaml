@@ -17,7 +17,7 @@ wikipedia:                        # Issue 5
   page_title: "List of S&P 500 companies"
   # Wikimedia asks for a descriptive User-Agent with contact details.
   # Replace the e-mail with a team member's address before running.
-  user_agent: "UC3M-WebAnalytics-SP500Networks/0.1 (student project; contact: CHANGE_ME@alumnos.uc3m.es)"
+  user_agent: "UC3M-WebAnalytics-SP500Networks/0.1 (student project; contact: 100523104@alumnos.uc3m.es)"
   # Universe and labels come from the latest revision at or before this time (Issue 1, 2).
   snapshot_timestamp: "2024-12-31T23:59:59Z"
   # GICS reclassification events (Issue 2). For each event we compare the
