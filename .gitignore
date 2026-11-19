@@ -1,0 +1,20 @@
+# Data never goes into git: size, and Yahoo/Tiingo terms forbid redistribution.
+data/
+*.parquet
+*.feather
+
+# Secrets
+.env
+*.key
+secrets*
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

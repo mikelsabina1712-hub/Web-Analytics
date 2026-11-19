@@ -1,0 +1,92 @@
+# Single source of truth for every parameter in the project.
+# Change a value here, never inside a notebook. Each key cites the
+# research-design issue that fixed it (see docs/research_design.md).
+
+project:
+  name: "S&P 500 co-movement networks"
+  seed: 2026                      # global seed for every random choice
+
+paths:
+  # Raw and derived data never go into git (size + data licences).
+  # In Colab they live on Google Drive; locally under ./data.
+  drive_data_dir: "/content/drive/MyDrive/WebAnalytics_SP500/data"
+  local_data_dir: "data"
+
+wikipedia:                        # Issue 5
+  api_url: "https://en.wikipedia.org/w/api.php"
+  page_title: "List of S&P 500 companies"
+  # Wikimedia asks for a descriptive User-Agent with contact details.
+  # Replace the e-mail with a team member's address before running.
+  user_agent: "UC3M-WebAnalytics-SP500Networks/0.1 (student project; contact: CHANGE_ME@alumnos.uc3m.es)"
+  # Universe and labels come from the latest revision at or before this time (Issue 1, 2).
+  snapshot_timestamp: "2024-12-31T23:59:59Z"
+  # GICS reclassification events (Issue 2). For each event we compare the
+  # latest revision before `before` with the latest revision before `after`.
+  reclassification_events:
+    gics_2018:
+      effective: "2018-09-24"
+      before: "2018-09-01T00:00:00Z"
+      after: "2018-10-31T23:59:59Z"
+      published_sp500_changes: 23   # S&P DJI Indexology, Sept 2018
+    gics_2023:
+      effective: "2023-03-20"       # first trading day after the 17 March close
+      before: "2023-03-01T00:00:00Z"
+      after: "2023-04-30T23:59:59Z"
+      published_sp500_changes: 14   # UBS CIO, March 2023
+  # Sector names that changed label but not membership.
+  sector_aliases:
+    "Telecommunication Services": "Communication Services"
+    "Telecommunications Services": "Communication Services"
+
+prices:                           # Issue 4
+  market_proxy: "SPY"
+  start: "2014-12-31"             # one day before the sample so 2015's first return exists
+  end_exclusive: "2025-01-01"     # yfinance treats `end` as exclusive
+  batch_size: 50
+  max_retries: 4
+
+validation:                       # Issue 4
+  tiingo_url: "https://api.tiingo.com/tiingo/daily/{ticker}/prices"
+  sample_size: 30                 # random tickers, plus the market proxy
+  min_return_correlation: 0.999
+  max_share_days_off: 0.01        # at most 1% of days may differ ...
+  day_tolerance: 0.001            # ... by more than 0.1 percentage points (log return)
+
+sanity:                           # Issue 4
+  max_abs_daily_return: 0.50
+  max_identical_run: 5
+
+sample:                           # Issue 16
+  first_return_date: "2015-01-02"
+  last_return_date: "2024-12-31"
+
+universe:                         # Issues 1, 3, 6
+  min_coverage: 0.99
+  max_gap_days: 5
+
+windows:                          # Issue 16
+  rolling_months: 24
+  rolling_step_months: 1
+  snapshot_years: [2019, 2020, 2022]
+  event_window_days: 63
+  event_step_days: 5
+
+networks:                         # Issues 9, 10
+  alpha_fwer: 0.05
+  bh_q: 0.05
+
+louvain:                          # Issue 13
+  n_seeds: 50
+  resolution: 1.0
+  resolution_grid: [0.5, 1.0, 1.5, 2.0]
+
+nulls:                            # Issue 15
+  label_permutations: 1000
+  time_shuffles: 20
+  rewirings: 20
+
+event_markers:                    # Issue 16 (sourced dates)
+  covid_peak: "2020-02-19"
+  covid_trough: "2020-03-23"
+  bear_2022_peak: "2022-01-03"
+  bear_2022_trough: "2022-10-12"
