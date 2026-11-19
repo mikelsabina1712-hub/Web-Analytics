@@ -56,6 +56,10 @@ prices:                           # Issue 4
   # (first run: 18 of 504 failed). Those are fetched from Tiingo instead,
   # so the sample is not biased against firms acquired after the study period.
   fallback_source: "tiingo"
+  # Yahoo serves these with a truncated history (decided after Notebook 02's
+  # first run). Tiingo replaces Yahoo if its history starts earlier.
+  tiingo_preferred:
+    PARA: "Paramount (CBS, then ViacomCBS) traded all sample long; Yahoo starts 2021-02-12 after the 2025 Skydance merger"
 
 validation:                       # Issue 4
   tiingo_url: "https://api.tiingo.com/tiingo/daily/{ticker}/prices"
