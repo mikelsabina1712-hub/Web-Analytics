@@ -44,10 +44,14 @@ def distance(rho: np.ndarray) -> np.ndarray:
     return np.sqrt(np.clip(2.0 * (1.0 - rho), 0.0, None))
 
 
-def fisher_z(rho: np.ndarray, n: np.ndarray) -> np.ndarray:
-    """Test statistic for H0: rho = 0, approximately N(0, 1)."""
+def fisher_z(rho: np.ndarray, n: np.ndarray, scale: float = 1.0) -> np.ndarray:
+    """Test statistic for H0: rho = 0, approximately N(0, 1).
+
+    ``scale`` is the variance factor of artanh(r): 1 for Pearson, 1.06 for
+    Spearman rank correlation (Fieller, Hartley and Pearson, 1957).
+    """
     r = np.clip(rho, -0.999999, 0.999999)
-    return np.arctanh(r) * np.sqrt(np.maximum(n - 3, 1))
+    return np.arctanh(r) * np.sqrt(np.maximum(n - 3, 1) / scale)
 
 
 def bonferroni_z(alpha: float, n_tests: int) -> float:
@@ -65,14 +69,15 @@ def two_sided_p(z: np.ndarray) -> np.ndarray:
     return 2 * ndtr(-np.abs(z))
 
 
-def significant(rho: np.ndarray, n: np.ndarray, alpha: float, method: str = "bonferroni") -> np.ndarray:
+def significant(rho: np.ndarray, n: np.ndarray, alpha: float, method: str = "bonferroni",
+                scale: float = 1.0) -> np.ndarray:
     """Boolean N x N matrix of significant pairs (either sign), diagonal False.
 
     method="bonferroni": |z| above the family-wise cutoff (main, Issue 9).
     method="bh": Benjamini-Hochberg at FDR ``alpha`` (robustness).
     """
     iu = np.triu_indices(rho.shape[0], k=1)
-    z = fisher_z(rho[iu], n[iu])
+    z = fisher_z(rho[iu], n[iu], scale)
     m = len(z)
     if method == "bonferroni":
         sig = np.abs(z) > bonferroni_z(alpha, m)
