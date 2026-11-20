@@ -9,25 +9,28 @@ The approved methodology is summarised in [`docs/research_design.md`](docs/resea
 ## Repository layout
 
 ```
-notebooks/   01_data_collection … 08_figures, run in order
+notebooks/     01 … 08, run in order (each reads the previous one's files on Drive)
 src/sp500net/  shared code imported by every notebook
-config.yaml  every date, threshold and seed (one place to change them)
-tests/       offline unit tests for src/
-outputs/     figures and small summary tables (committed)
-docs/        research design summary
-data/        never committed; in Colab the data lives on Google Drive
+config.yaml    every date, threshold and seed (one place to change them)
+tests/         offline unit tests for src/ (`pytest`)
+docs/          research design summary
+data/          never committed; in Colab the data lives on Google Drive
 ```
 
-| Notebook | Status | Open |
-| --- | --- | --- |
-| 01 Data collection | Ready to run | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/01_data_collection.ipynb) |
-| 02 Returns and universe | Next | |
-| 03 Market model | Planned | |
-| 04 Network construction | Planned | |
-| 05 Metrics and communities | Planned | |
-| 06 Validation (null models) | Planned | |
-| 07 Robustness | Planned | |
-| 08 Figures and tables | Planned | |
+| Notebook | What it does | Runtime | Open |
+| --- | --- | --- | --- |
+| 01 | Constituents (Wikipedia API), prices (Yahoo, Tiingo fallback), sanity checks, cross-source validation | ~10 min (first run) | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/01_data_collection.ipynb) |
+| 02 | Log returns, stale prices, coverage rule, share classes: fixed universe of 468 stocks | < 1 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/02_returns_universe.ipynb) |
+| 03 | 97 rolling, 3 snapshot and 491 event windows; SPY market model per window | ~1 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/03_market_model.ipynb) |
+| 04 | Correlations, Bonferroni residual networks, MSTs, connectivity and Marchenko–Pastur | ~2 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/04_networks.ipynb) |
+| 05 | Centrality, Louvain (50 seeds), NMI/ARI/Q_GICS, label-permutation null | 10–20 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/05_communities.ipynb) |
+| 06 | Time-shuffle and rewiring nulls; what the snapshot communities are | ~5 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/06_nulls.ipynb) |
+| 07 | BH, fixed density, EW market, Spearman, top 100, reclassified, γ, raw, universe | 20–30 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/07_robustness.ipynb) |
+| 08 | Final figures, tables and the Looker Studio CSV | ~1 min | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikelsabina1712-hub/web-analytics/blob/main/notebooks/08_report_figures.ipynb) |
+
+Long steps (Louvain in 05, robustness in 07) save each window to Drive as soon as it finishes: if Colab disconnects, *Run all* again and it continues.
+
+**Outputs.** Intermediate files go to `MyDrive/WebAnalytics_SP500/data/`; tables and figures to `MyDrive/WebAnalytics_SP500/outputs/`. Notebook 08 collects the final figures and tables in `outputs/report/` and zips them as `outputs/report_assets.zip`.
 
 ## One-time setup (each team member)
 
@@ -52,6 +55,6 @@ Data is written to `MyDrive/WebAnalytics_SP500/data`. To share one copy across t
 
 - **Wikipedia**, *List of S&P 500 companies*, pinned revisions via the MediaWiki API (CC BY-SA 4.0).
 - **Yahoo Finance** via the open-source `yfinance` library (unofficial; for research and education).
-- **Tiingo** end-of-day API, free plan, used only to validate a sample of prices.
+- **Tiingo** end-of-day REST API, free plan: prices for the 15 tickers Yahoo no longer serves, and cross-validation of a random sample of Yahoo series.
 
 Price data is stored on Drive only and is not redistributed in this repository.
