@@ -57,6 +57,16 @@ def test_sector_changes_counts_classes_and_renames(old, new):
     assert ch.loc[ch.symbol_after == "META", "matched_on"].item() == "cik"
 
 
+def test_match_tables_flags_reused_ticker():
+    cols = ["symbol", "security", "sector", "sub_industry", "cik", "date_added"]
+    b = pd.DataFrame([["FOXA", "Twenty-First Century Fox", "Communication Services", "x", "1308161", ""],
+                      ["AAPL", "Apple", "Information Technology", "x", "320193", ""]], columns=cols)
+    a = pd.DataFrame([["FOXA", "Fox Corporation", "Communication Services", "x", "1754301", ""],
+                      ["AAPL", "Apple Inc.", "Information Technology", "x", "320193", ""]], columns=cols)
+    m = wiki.match_tables(b, a).set_index("symbol_before")
+    assert m.loc["FOXA", "cik_changed"] and not m.loc["AAPL", "cik_changed"]
+
+
 # -------------------------------------------------------------- tickers
 
 def test_to_yahoo():
