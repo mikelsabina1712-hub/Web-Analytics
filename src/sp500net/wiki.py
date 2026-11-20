@@ -199,6 +199,11 @@ def match_tables(before: pd.DataFrame, after: pd.DataFrame) -> pd.DataFrame:
     by_symbol = b.merge(a, on="symbol", suffixes=("_before", "_after"))
     by_symbol["symbol_before"] = by_symbol["symbol_after"] = by_symbol["symbol"]
     by_symbol["matched_on"] = "symbol"
+    # Same ticker, different CIK: either a holding-company reorganisation
+    # (Disney 2019) or a different firm reusing the ticker (FOXA: 21st
+    # Century Fox, then Fox Corp). Flagged for a manual decision.
+    by_symbol["cik_changed"] = (by_symbol["cik_before"].ne("") & by_symbol["cik_after"].ne("")
+                                & by_symbol["cik_before"].ne(by_symbol["cik_after"]))
 
     b_left = b[~b["symbol"].isin(by_symbol["symbol"]) & b["cik"].ne("")]
     a_left = a[~a["symbol"].isin(by_symbol["symbol"]) & a["cik"].ne("")]
@@ -208,9 +213,10 @@ def match_tables(before: pd.DataFrame, after: pd.DataFrame) -> pd.DataFrame:
     a_left = a_left[~a_left["cik"].duplicated(keep=False)]
     by_cik = b_left.merge(a_left, on="cik", suffixes=("_before", "_after"))
     by_cik["matched_on"] = "cik"
+    by_cik["cik_changed"] = False
 
     keep = ["symbol_before", "symbol_after", "security_before", "sector_before",
-            "sector_after", "matched_on"]
+            "sector_after", "matched_on", "cik_changed"]
     if "cik" not in by_symbol:
         by_symbol["cik"] = by_symbol["cik_before"]
     return pd.concat([by_symbol[keep + ["cik"]], by_cik[keep + ["cik"]]], ignore_index=True)

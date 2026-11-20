@@ -33,6 +33,11 @@ wikipedia:                        # Issue 5
       before: "2023-03-01T00:00:00Z"
       after: "2023-04-30T23:59:59Z"
       published_sp500_changes: 14   # UBS CIO, March 2023
+  # Same ticker in 2018 and 2024 but a different company: not counted as
+  # reclassified stocks (checked by hand from the CIK-changed list in Notebook 01).
+  not_same_company:
+    FOX: "Fox Corp (spun off March 2019) is not 21st Century Fox, which Disney acquired"
+    FOXA: "Fox Corp (spun off March 2019) is not 21st Century Fox, which Disney acquired"
   # Sector names that changed label but not membership.
   sector_aliases:
     "Telecommunication Services": "Communication Services"
